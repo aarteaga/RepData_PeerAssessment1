@@ -1,20 +1,87 @@
 # Reproducible Research: Peer Assessment 1
-
+The assigment uses data from a wearable device to count steps of a person for a long period of time and gives the opportunity to study different aspect from them.
 
 ## Loading and preprocessing the data
-
-
+The data are loaded in a zip file that has to be decrompressed. The only prepocessing done at this step is to convert date data to date format. The output in R is a dataframe with 3 variables: 
+ - date: the date of data collection in R date format
+ - interval: The time of the data adquisition in 5 minutes interval time
+ - steps: the number of steps measured in the interval.
+ 
+```{r}
+unzip("activity.zip")
+data <- read.csv("activity.csv")
+data$date <- as.Date(data$date, "%Y-%m-%d")
+```
 
 ## What is mean total number of steps taken per day?
+The following histogram shows the nuber of steps taken per day.
 
+```{r}
+stepsperday <- tapply(data$steps, data$date, sum)
+hist( stepsperday , main="Steps per Day" , 
+     xlab= "Number of Steps", ylab = "Number of Days")
+```
 
+```{r}
+mean_steps <- mean(stepsperday, na.rm = TRUE)
+median_steps <- median(stepsperday, na.rm = TRUE)
+```
+The mean value of steps per day is `r mean_steps `
+The median value of steps per day is `r median_steps `
 
 ## What is the average daily activity pattern?
-
-
+Nest analsysis consists of checking differences among intervals of measurement, so about moments of the day. A time series plot is used for that purpose.
+```{r}
+stepsperinterval <- tapply(data$steps[!is.na(data$steps)], 
+                           data$interval[!is.na(data$steps)], mean)
+plot(as.character(unique(data$interval)), stepsperinterval, type = "l",
+     main = "Average steps per Time Interval",
+     ylab = "Average Number of Steps" ,
+     xlab = "Time interval")
+max_interval <- stepsperinterval[stepsperinterval == max(stepsperinterval)]
+```
+The time interval with more steps is ```r max_interval ```
 
 ## Imputing missing values
 
-
+```{r}
+number_of_na <- sum(is.na(data))
+data_noNa <- data
+```
+In those data there are several missing values, concretelly `r number_of_na` missing values. Next code fills the missing values with the mean value of that time interval over the days. The figure below shows the same data as first figure but sustituting missing values.
+```{r}
+for (index in 1:length(data$steps)) {
+    if (is.na(data$steps[index])) {
+        data_noNa$steps[index] <- mean(data[data$interval == data$interval[index],1], na.rm = TRUE)
+    }    
+}
+stepsperday_noNa <- tapply(data_noNa$steps, data_noNa$date, sum)
+hist( stepsperday_noNa , main="Steps per Day" , 
+     xlab= "Number of Steps", ylab = "Number of Days")
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+The last step of the analysis has been to check if there is a difference from weekdays to weekends in the step distribution over day time intervals.  
+```{r}
+wd <- as.POSIXlt(data_noNa$date)
+data_noNa$wdays <- ifelse(wd$wday == 0 | wd$wday == 6, 
+                          c("weekend"), c("weekdays")) 
+stepsinterval_wend <- tapply(
+              data_noNa$steps[data_noNa$wdays == "weekend"], 
+              data_noNa$interval[data_noNa$wdays == "weekend"], mean)
+stepsinterval_wday <- tapply(
+              data_noNa$steps[data_noNa$wdays == "weekdays"], 
+              data_noNa$interval[data_noNa$wdays == "weekdays"], mean)
+intervals <- unique(data$interval)
+n_intervals <- length(intervals)
+data2 <- rbind(
+   data.frame(steps = stepsinterval_wend, interval = intervals, 
+              weekday = rep("weekend" , n_intervals)) ,
+   data.frame(steps = stepsinterval_wday, interval = intervals, 
+              weekday = rep("weekdays" , n_intervals))
+               )
+library(lattice)
+xyplot(steps ~ interval | weekday, data = data2, type = "l" ,layout = c(1, 2))
+```
+
+There is a clear difference in the graphical patterns. The stong activity from 8:00 to 9:00 in weekdays becomes a low peak in weekends, reducing 50 steps in average.
