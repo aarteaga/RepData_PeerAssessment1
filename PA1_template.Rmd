@@ -14,11 +14,12 @@ data$date <- as.Date(data$date, "%Y-%m-%d")
 ```
 
 ## What is mean total number of steps taken per day?
+
 The following histogram shows the nuber of steps taken per day.
 
 ```{r}
 stepsperday <- tapply(data$steps, data$date, sum)
-hist( stepsperday , main="Steps per Day" , 
+hist( stepsperday , main="Steps per Day" , col = "blue", 
      xlab= "Number of Steps", ylab = "Number of Days")
 ```
 
@@ -30,7 +31,9 @@ The mean value of steps per day is `r mean_steps `
 The median value of steps per day is `r median_steps `
 
 ## What is the average daily activity pattern?
+
 Nest analsysis consists of checking differences among intervals of measurement, so about moments of the day. A time series plot is used for that purpose.
+
 ```{r}
 stepsperinterval <- tapply(data$steps[!is.na(data$steps)], 
                            data$interval[!is.na(data$steps)], mean)
@@ -48,7 +51,9 @@ The time interval with more steps is ```r max_interval ```
 number_of_na <- sum(is.na(data))
 data_noNa <- data
 ```
+
 In those data there are several missing values, concretelly `r number_of_na` missing values. Next code fills the missing values with the mean value of that time interval over the days. The figure below shows the same data as first figure but sustituting missing values.
+
 ```{r}
 for (index in 1:length(data$steps)) {
     if (is.na(data$steps[index])) {
@@ -56,12 +61,16 @@ for (index in 1:length(data$steps)) {
     }    
 }
 stepsperday_noNa <- tapply(data_noNa$steps, data_noNa$date, sum)
-hist( stepsperday_noNa , main="Steps per Day" , 
+hist( stepsperday_noNa , main="Steps per Day" , col = "blue",
      xlab= "Number of Steps", ylab = "Number of Days")
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
 The last step of the analysis has been to check if there is a difference from weekdays to weekends in the step distribution over day time intervals.  
+
+For this analysis, weekdays and weekends have been obtained for the dates in NA removed data and introduced in a new variable called weekday. After that a new data frame was elaborated calculating steps per interval for both time periods and binding them indetified by a dummy variable. The plot is striaghtforward using lattice package. 
+
 ```{r}
 wd <- as.POSIXlt(data_noNa$date)
 data_noNa$wdays <- ifelse(wd$wday == 0 | wd$wday == 6, 
