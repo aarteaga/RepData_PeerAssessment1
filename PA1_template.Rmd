@@ -1,11 +1,17 @@
 # Reproducible Research: Peer Assessment 1
+
 The assigment uses data from a wearable device to count steps of a person for a long period of time and gives the opportunity to study different aspect from them.
 
 ## Loading and preprocessing the data
-The data are loaded in a zip file that has to be decrompressed. The only prepocessing done at this step is to convert date data to date format. The output in R is a dataframe with 3 variables: 
- - date: the date of data collection in R date format
- - interval: The time of the data adquisition in 5 minutes interval time
- - steps: the number of steps measured in the interval.
+
+The data are loaded in a zip file that has to be decrompressed. Data are got from the Coursera web site. As explained in the assigment the variables included in the dataset are:
+ - * steps *: Number of steps taking in a 5-minute interval (missing values are coded as NA)
+ - * date *: The date on which the measurement was taken in YYYY-MM-DD format
+ - * interval *: Identifier for the 5-minute interval in which measurement was taken
+
+The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
+
+The only prepocessing done at this step is to convert date data to date format. The output in R is a dataframe with 3 variables: date, interval and steps.
  
 ```{r}
 unzip("activity.zip")
@@ -32,7 +38,7 @@ The median value of steps per day is `r median_steps `
 
 ## What is the average daily activity pattern?
 
-Nest analsysis consists of checking differences among intervals of measurement, so about moments of the day. A time series plot is used for that purpose.
+Next analsysis consists of checking differences among intervals of measurement, so about moments of the day. A time series plot is used for that purpose.
 
 ```{r}
 stepsperinterval <- tapply(data$steps[!is.na(data$steps)], 
@@ -69,7 +75,7 @@ hist( stepsperday_noNa , main="Steps per Day" , col = "blue",
 
 The last step of the analysis has been to check if there is a difference from weekdays to weekends in the step distribution over day time intervals.  
 
-For this analysis, weekdays and weekends have been obtained for the dates in NA removed data and introduced in a new variable called weekday. After that a new data frame was elaborated calculating steps per interval for both time periods and binding them indetified by a dummy variable. The plot is striaghtforward using lattice package. 
+For this analysis, weekdays and weekends have been obtained for the dates in NA removed data and introduced in a new variable called weekday. After that, a new data frame was elaborated calculating steps per interval for both time periods and binding them indetified by a dummy variable. The plot is striaghtforward using lattice package. 
 
 ```{r}
 wd <- as.POSIXlt(data_noNa$date)
